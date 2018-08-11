@@ -48,6 +48,7 @@ class ModuleImpl(override val name: String,
         builder.addImport("org.kodein.di.generic", "bind")
         builder.addImport("org.kodein.di.generic", "provider")
         builder.addImport("org.kodein.di.generic", "singleton")
+        builder.addImport("org.kodein.di.generic", "instance")
     }
 
 
