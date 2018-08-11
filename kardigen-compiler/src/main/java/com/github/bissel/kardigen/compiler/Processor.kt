@@ -29,15 +29,28 @@ class Processor : AbstractProcessor() {
     }
 
 
-    private fun modules(constructors: Set<Element>): List<Module> {
-        TODO()
-    }
+    private fun modules(constructors: Set<Element>): List<Module> =
+        constructors
+            .map { element ->
+                val classElement = element.enclosingElement
+                val moduleName =
+                    classElement.getAnnotation(KodeinModule::class.java)?.module
+                        ?: DEFAULT_MODULE_NAME
+
+                //TODO
+                ModuleImpl()
+            }
+            .distinctBy { it.name }
 
 
     private fun render(modules: List<Module>) {
         for (module in modules) {
             module.render(processingEnv)
         }
+    }
+
+    companion object {
+        const val DEFAULT_MODULE_NAME = "kardigen"
     }
 }
 
