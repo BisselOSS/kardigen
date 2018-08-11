@@ -3,6 +3,7 @@ package com.github.bissel.kardigen.compiler
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.PropertySpec
+import java.io.File
 import java.net.URI
 import javax.annotation.processing.ProcessingEnvironment
 
@@ -16,7 +17,9 @@ class ModuleImpl(override val name: String,
 
         val modulePropertySpec = PropertySpec.builder(name = name, type = kodeinModuleClassName())
 
+
         fileSpecBuilder.addProperty(modulePropertySpec.build())
+        fileSpecBuilder.build().writeTo(File(file))
     }
 
 
