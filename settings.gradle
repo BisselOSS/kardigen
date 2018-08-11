@@ -1,0 +1,1 @@
+include ':app', ':kardigen-compiler', ':kardigen-annotation'
