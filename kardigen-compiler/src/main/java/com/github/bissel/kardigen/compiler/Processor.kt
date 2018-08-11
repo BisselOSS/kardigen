@@ -29,18 +29,27 @@ class Processor : AbstractProcessor() {
     }
 
 
-    private fun modules(constructors: Set<Element>): List<Module> =
-        constructors
-            .map { element ->
-                val classElement = element.enclosingElement
-                val moduleName =
-                    classElement.getAnnotation(KodeinModule::class.java)?.module
-                        ?: DEFAULT_MODULE_NAME
+    private fun modules(constructors: Set<Element>): List<Module> {
+        val modules = mutableMapOf<String, MutableList<Binding>>()
 
-                //TODO
-                ModuleImpl()
+        constructors.forEach { element ->
+            val classElement = element.enclosingElement
+            val moduleName =
+                classElement.getAnnotation(KodeinModule::class.java)?.module
+                    ?: DEFAULT_MODULE_NAME
+
+            val bindingImpl = BindingImpl(processingEnv, element)
+
+            if (modules.containsKey(moduleName)) {
+                modules[moduleName]?.add(bindingImpl)
+            } else {
+                val value: MutableList<Binding> = mutableListOf(bindingImpl)
+                modules[moduleName] = value
             }
-            .distinctBy { it.name }
+        }
+
+        return modules.map { entry -> ModuleImpl(entry.key, entry.value) }
+    }
 
 
     private fun render(modules: List<Module>) {
