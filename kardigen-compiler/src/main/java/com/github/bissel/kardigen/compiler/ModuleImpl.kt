@@ -18,6 +18,7 @@ class ModuleImpl(override val name: String,
         fileSpecBuilder.addProperty(modulePropertySpec.build())
         renderCreateFunction(fileSpecBuilder)
         renderBuildFunction(fileSpecBuilder)
+        addImports(fileSpecBuilder)
 
         fileSpecBuilder.build().writeTo(File(file))
     }
@@ -26,12 +27,12 @@ class ModuleImpl(override val name: String,
         val function = FunSpec.builder("createModule")
         function.addModifiers(KModifier.PRIVATE)
         function.returns(kodeinModuleClassName())
-        function.addCode("return Kodein.Module(::build)")
+        function.addCode("return Kodein.Module(name = \"$name\", init = Kodein.Builder::buildModule)")
         builder.addFunction(function.build())
     }
 
     private fun renderBuildFunction(builder: FileSpec.Builder) {
-        val function = FunSpec.builder("build")
+        val function = FunSpec.builder("buildModule")
         function.addModifiers(KModifier.PRIVATE)
         function.receiver(kodeinBuilderClassName())
         for (binding in bindings) {
@@ -39,6 +40,14 @@ class ModuleImpl(override val name: String,
         }
 
         builder.addFunction(function.build())
+    }
+
+    private fun addImports(builder: FileSpec.Builder) {
+        //import org.kodein.di.generic.bind
+        //import org.kodein.di.generic.provider
+        builder.addImport("org.kodein.di.generic", "bind")
+        builder.addImport("org.kodein.di.generic", "provider")
+        builder.addImport("org.kodein.di.generic", "singleton")
     }
 
 

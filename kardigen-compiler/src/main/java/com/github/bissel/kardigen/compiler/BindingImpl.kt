@@ -8,11 +8,15 @@ import com.squareup.kotlinpoet.asTypeName
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.ExecutableElement
+import javax.lang.model.type.MirroredTypeException
+import javax.lang.model.type.TypeMirror
+
 
 class BindingImpl(private val environment: ProcessingEnvironment,
                   override val element: Element) : Binding {
 
     override fun render(target: FunSpec.Builder) {
+
         when {
             isSingleton -> renderSingleton(target)
             else -> renderProvider(target)
@@ -22,9 +26,11 @@ class BindingImpl(private val environment: ProcessingEnvironment,
     private fun renderProvider(target: FunSpec.Builder) {
         target.addCode(
             """
+
             bind<%T>() with provider {
                 %T($injectStatement)
             }
+
             """.trimIndent(),
             bindingClassName, realClassName)
     }
@@ -32,9 +38,11 @@ class BindingImpl(private val environment: ProcessingEnvironment,
     private fun renderSingleton(target: FunSpec.Builder) {
         target.addCode(
             """
+
             bind<%T>() with singleton {
                 %T($injectStatement)
             }
+
             """.trimIndent(),
             bindingClassName, realClassName)
     }
@@ -50,13 +58,29 @@ class BindingImpl(private val environment: ProcessingEnvironment,
     }
 
     private val bindingClassName: ClassName by lazy {
-        val bindAnnotation: KodeinBind? = element.getAnnotation(KodeinBind::class.java)
+        val bindAnnotation: KodeinBind? = classElement.getAnnotation(KodeinBind::class.java)
         when {
-            bindAnnotation != null -> bindAnnotation.value.java.asTypeName() as ClassName
+            bindAnnotation != null -> bindAnnotation.valueClassName
             else -> realClassName
         }
     }
 
+
+    private val KodeinBind.valueType: TypeMirror
+        get() {
+            try {
+                this.value // this should throw
+            } catch (e: MirroredTypeException) {
+                return e.typeMirror
+            }
+
+            throw IllegalStateException("According to StackOverflow... We are fucked now")
+        }
+
+    private val KodeinBind.valueClassName: ClassName
+        get() {
+            TODO()
+        }
 
     private val realClassName: ClassName by lazy {
         classElement.asType().asTypeName() as ClassName
