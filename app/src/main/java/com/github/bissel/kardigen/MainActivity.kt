@@ -3,6 +3,7 @@ package com.github.bissel.kardigen
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.github.bissel.kardigen.annotation.KodeinBind
+import com.github.bissel.kardigen.annotation.KodeinInject
 import com.github.bissel.kardigen.annotation.KodeinModule
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
@@ -23,9 +24,10 @@ interface Service<T>
 
 @KodeinModule("hallo")
 @KodeinBind(Service::class)
-class ServiceImpl : Service<SomeT>
+class ServiceImpl @KodeinInject constructor() : Service<SomeT>
 
 
 val test = Kodein.Module("test") {
     bind<Service<SomeT>>() with provider { ServiceImpl() }
 }
+
